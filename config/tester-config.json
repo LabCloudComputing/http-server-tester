@@ -1,0 +1,96 @@
+{
+    "directory": "/Users/iceyblacktea/Projects/VScode/Rust/actix-http-server/",
+    "build": "cargo build --release",
+    "clean": "cargo clean",
+    "bin": "./target/release/actix-http-server",
+    "server": {
+        "ip": "127.0.0.1",
+        "port": 8080,
+        "threads": 8
+    },
+    "items": {
+        "wait_seconds": 1,
+        "basic": {
+            "get": [
+                {
+                    "path": "/",
+                    "file": "./files/html/index.html"
+                },
+                {
+                    "path": "/error",
+                    "file": "./files/html/404.html"
+                },
+                {
+                    "path": "/api/check",
+                    "file": "./files/text/data.txt"
+                }
+            ],
+            "post": [
+                {
+                    "path": "/api/echo",
+                    "payload": "./files/text/echo.txt",
+                    "file": "./files/text/echo.txt"
+                }
+            ]
+        },
+        "advanced": {
+            "get": [
+                {
+                    "path": "/index.html",
+                    "file": "./files/html/index.html"
+                },
+                {
+                    "path": "/error",
+                    "file": "./files/html/404.html"
+                },
+                {
+                    "path": "/api/list",
+                    "file": "./files/json/data.json"
+                },
+                {
+                    "path": "/api/search?name=Foo",
+                    "file": "./files/json/search.json"
+                },
+                {
+                    "path": "/test/test.html",
+                    "file": "./files/html/test.html"
+                }
+            ],
+            "post": [
+                {
+                    "path": "/api/upload",
+                    "payload": "./files/json/upload.json",
+                    "file": "./files/json/upload.json"
+                }
+            ],
+            "pipelining": [
+                [
+                    "/index.html",
+                    "/404.html",
+                    "/501.html"
+                ],
+                [
+                    "/404.html",
+                    "/index.html",
+                    "/501.html"
+                ]
+            ],
+            "proxy": [
+                {
+                    "host": "http://example.com",
+                    "paths": [
+                        "/",
+                        "/index.html"
+                    ]
+                }
+            ],
+            "performance": [
+                {
+                    "path": "/api/search?name=Foo",
+                    "requests": 100,
+                    "concurrency": 10
+                }
+            ]
+        }
+    }
+}

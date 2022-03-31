@@ -1,0 +1,17 @@
+refresh_rate: 30 seconds
+appenders:
+  stdout:
+    kind: console
+    encoder:
+      pattern: "[{h({l:<5.10})}] {m}{n}"
+  log-saver:
+    kind: file
+    path: "logs/tester.log"
+    append: false
+    encoder:
+      pattern: "{d(%Y-%m-%d %H:%M:%S)} [{h({l:<5.10})}] {m}{n}"
+root:
+  level: trace
+  appenders:
+    - stdout
+    - log-saver
