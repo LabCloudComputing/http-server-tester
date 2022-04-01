@@ -1,8 +1,8 @@
 {
-    "directory": "/Users/iceyblacktea/Projects/VScode/Rust/actix-http-server/",
-    "build": "cargo build --release",
-    "clean": "cargo clean",
-    "bin": "./target/release/actix-http-server",
+    "directory": "/home/user/Projects/http-server/",
+    "build": "make",
+    "clean": "make clean",
+    "bin": "./http-server",
     "server": {
         "ip": "127.0.0.1",
         "port": 8080,

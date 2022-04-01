@@ -6,8 +6,8 @@ use utils::config;
 
 #[macro_use]
 extern crate log;
-use log4rs;
 use clap::{Parser, Subcommand};
+use log4rs;
 
 use std::process;
 
@@ -21,22 +21,22 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Command {
-    /// check if tools have been installed
+    /// Check if tools have been installed
     Check,
-    /// build the http server
+    /// Build the http server
     Build,
-    /// clean the project directory
+    /// Clean the project directory
     Clean,
-    /// run the http server in dev version, tester only send requests.
+    /// Test the running http server
     Dev {
         #[clap(short, long, default_value = "basic")]
-        /// test in basic or advanced mode
+        /// Test in basic or advanced mode
         mode: String,
     },
-    /// run the http server in release version
+    /// Test the http server including rebuilding and starting
     Run {
         #[clap(short, long, default_value = "basic")]
-        /// test in basic or advanced mode
+        /// Test in basic or advanced mode
         mode: String,
     },
 }
@@ -49,7 +49,9 @@ pub enum Version {
 fn run_cmd() -> Result<(), ()> {
     match log4rs::init_file("config/log-config.yaml", Default::default()) {
         Ok(()) => {}
-        Err(_) => {error!("Parse ./config/log-config.yaml failed, use default setting.")}
+        Err(_) => {
+            error!("Parse ./config/log-config.yaml failed, use default setting.")
+        }
     };
 
     let args = Cli::parse();
@@ -117,7 +119,6 @@ fn test(version: Version, mode: &String, config: serde_json::Value) -> Result<()
     if mode.as_str() == "advanced" {
         let items = config::get_json_value(&config, "items")?;
         let mode_items = config::get_json_value(&items, "advanced")?;
-        
         let pipe_items = config::get_json_value(&mode_items, "pipelining")?;
         pipe_result = Some(run::pipelining(
             &dir,
@@ -128,7 +129,6 @@ fn test(version: Version, mode: &String, config: serde_json::Value) -> Result<()
             wait_seconds,
             &version,
         )?);
-        
         let proxy_items = config::get_json_value(&mode_items, "proxy")?;
         proxy_result = Some(run::proxy(
             &dir,
@@ -180,7 +180,7 @@ fn print_results(
 
     match pipe_result {
         Some((all, passes)) => {
-            let message = format!("pipelining test items: all {}, passes {}", all, passes);
+            let message = format!("Pipelining test items: all {}, passes {}", all, passes);
             if all == passes {
                 info!("{}", message);
             } else {
@@ -188,7 +188,7 @@ fn print_results(
             }
         }
         None => {
-            warn!("pipelining not test...");
+            warn!("Pipelining not test...");
         }
     }
 
@@ -213,8 +213,12 @@ fn print_results(
             for i in 0..len {
                 let result = results.get(i).unwrap();
                 info!(
-                    "perf {}: requests {}, concurrency {}, reqs/s {}, time/req {}",
-                    i+1, result.0, result.1, result.2, result.3
+                    "No.{}: requests {}, concurrency {}, reqs/s {}, time/req {}",
+                    i + 1,
+                    result.0,
+                    result.1,
+                    result.2,
+                    result.3
                 );
             }
         }

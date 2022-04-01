@@ -18,7 +18,7 @@ Move the whole program folder to anywhere you like, but **DON'T CHANGE** the rel
 
 ## Use
 
-**ATTENTION**: Note that, unless otherwise specified, all relative paths of tester are relative to **the directory where you execute the file**.
+**ATTENTION**: Note that, unless otherwise specified, all relative paths of tester are relative to **the directory where you execute `./http-server-tester`**.
 
 ### Configure
 
@@ -53,11 +53,11 @@ For example:
 }
 ```
 
+**ATTENTION**: `bin` is relative to `directory`.
+
 > It's better to use absolute path for the key `directory`. Relative path is OK, but don't use environment variables like `$HOME` or `~`.
 
 > If you want to pass `build` or `clean`, just use a empty string `""`.
-
-**ATTENTION**: `bin` is relative to `directory`.
 
 > For `server.ip`, use `"127.0.0.1"` instead of `"localhost"`. Because `ab` don't support it.
 
@@ -67,51 +67,59 @@ If you don't understand how the meanings of keys, check [Configure Tester](#conf
 
 ### Check Tools & Files
 
-Install `curl` , `nc` & `ab`, they are tools that will be called.
+Install `curl` , `netcat(nc)` & `apache bench(ab)`, they are tools that will be called.
 
-Files in the directory `./files/` will be compare with the HTTP response during testing.
+Files in the directory `./files/` will be compared with the HTTP response during testing.
 
 They are specified in `./config/tester-config.json`.
 
 ### Run
 
-There are some subcommands, you can use `http-server-test --help` for some help information.
+There are some subcommands, **your most commonly used subcommand should be `run`.**
+
+It has a argument `mode`, use `--mode basic` or `--mode advanced` to select tester work mode.
+
+For example:
+
+```bash
+user@linux:~/http-server-tester$ ./http-server-tester run --mode advancd
+```
+
+Use `run` subcommand, tester will check `curl`, `nc` & `ab` tools , rebuild your projects, run your HTTP server and send requests to test.
+
+You can also use other subcommands, like `build`, `dev`, to help you to develop the server.
+
+> The different from `run` & `dev` is that `dev` subcommand won't rebuild your projects or try to run your HTTP server.
+
+> The `build` part will not print any messages unless it builds failed.
+
+Use `http-server-test --help` for more help information.
 
 ```bash
 user@linux:~/http-server-tester$ ./http-server-tester --help
-http-server-tester 
+http-server-tester 1.0.1
+IceyBlackTea <IceyBlackTea@outlook.com>
 A CLI test program for HNU Cloud Computing Lab 2, built with Rust.
 
 USAGE:
     http-server-tester <SUBCOMMAND>
 
 OPTIONS:
-    -h, --help    Print help information
+    -h, --help       Print help information
+    -V, --version    Print version information
 
 SUBCOMMANDS:
-    build    build the http server
-    check    check if tools have been installed
-    clean    clean the project directory
-    dev      run the http server in dev version, tester only send requests
+    build    Build the http server
+    check    Check if tools have been installed
+    clean    Clean the project directory
+    dev      Test the running http server
     help     Print this message or the help of the given subcommand(s)
-    run      run the http server in release version
+    run      Test the http server including rebuilding and starting
 ```
-
-**Your most commonly used subcommand should be `run`.**
-
-It has a argument `mode`, use `--mode basic` or `--mode advanced` to select tester work mode.
-
-```bash
-user@linux:~/http-server-tester$ ./http-server-tester run --mode advancd
-```
-
-Use `run` subcommand, tester will check `curl` & `ab` tools , rebuild your projects, run your HTTP server and send requests to test.
-
-> The different from `run` & `dev` is that `dev` subcommand won't rebuild your projects or try to run your HTTP server.
 
 ### Check Results
 
-The output will be shown in `stdout` & be storen in the log file `./logs/tester.log`.
+The output will be shown in console & be stored in the log file `./logs/tester.log`.
 
 It will show the log level & messages.
 
@@ -122,14 +130,14 @@ For example:
 ```bash
 user@linux:~/http-server-tester$ ./http-server-tester run --mode advancd
 ...
-[TRACE] Testing performance finished.
 [WARN ] Trying to kill the HTTP Server...
 [TRACE] The HTTP Server is stopped.
 [INFO ] -------TESTER RESULTS------
-[WARN ] HTTP test items: all 5, passes 2
+[WARN ] HTTP test items: all 6, passes 3
+[INFO ] Pipelining test items: all 2, passes 2
 [WARN ] Proxy test items: all 2, passes 0
 [INFO ] Perfermance test 1 times.
-[INFO ] perf 1: requests 100, concurrency 10, reqs/s 8685.08, time/req 0.115
+[INFO ] No.1: requests 100, concurrency 10, reqs/s 9273, time/req 0.108
 [INFO ] -------TESTER RESULTS------
 ```
 
@@ -139,9 +147,11 @@ user@linux:~/http-server-tester$ ./http-server-tester run --mode advancd
 
 You need to install [Rust](https://www.rust-lang.org/) toolchains.
 
-In the `http-serve-teseter/`, use `cargo build` for debug version, or `cargo build --release` for release version.
+In the `http-serve-teseter/`, `cargo build --release` for release version.
 
-The excutable file will be generated in `./target/debug/` or `./target/realse/`.
+The excutable file will be generated in `./target/realse/`.
+
+> Rust is hard but interesting. 😘
 
 ## More
 
@@ -164,7 +174,7 @@ It's a bit long, so please read it carefully.
 | clean | String | The command you clean your project |
 | bin | String | The command you run your project |
 | server | Object | The arguments for running your HTTP server |
-| items | Object | The test items |
+| items | Object | Test items |
 
 ##### server
 
@@ -181,6 +191,8 @@ It's a bit long, so please read it carefully.
 | wait_seconds | integer | The time for the tester to wait for your server to start |
 | basic / advanced | Object | Test items of basic / advanced version |
 
+> You can extend the waiting time appropriately if test statred before your server startup completely.
+
 ##### basic & advanced
 
 | key | value type | description |
@@ -191,7 +203,7 @@ It's a bit long, so please read it carefully.
 | prxoy | Array | Specific test items for proxy feature |
 | performance | Array | Specific test items for perfermance |
 
-> `pipelining`, `proxy` & `Performance` are only tested in advanced version.
+> `pipelining`, `proxy` & `performance` are only tested in advanced version.
 
 - `get[i]`
   - `path`: The url path that `curl` will request.

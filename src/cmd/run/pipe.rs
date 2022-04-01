@@ -2,7 +2,7 @@
  * @Author: IceyBlackTea
  * @Date: 2022-03-31 21:53:26
  * @LastEditors: IceyBlackTea
- * @LastEditTime: 2022-04-01 00:22:51
+ * @LastEditTime: 2022-04-01 10:38:24
  * @FilePath: /http-server-tester/src/cmd/run/pipe.rs
  * @Description: Copyright © 2021 IceyBlackTea. All rights reserved.
  */
@@ -38,10 +38,8 @@ pub fn pipelining(
                         let ip_port: Vec<&str> = ip_port.split(":").collect();
                         let ip = ip_port.get(0).unwrap();
                         let port = ip_port.get(1).unwrap();
-                        
-                        let (cmd, paths) =
-                            parse_pipelining_requests(ip, port, paths)?;
 
+                        let (cmd, paths) = parse_pipelining_requests(ip, port, paths)?;
                         let output = match process::Command::new("bash")
                             .arg("-c")
                             .arg(cmd.as_str())
@@ -86,7 +84,7 @@ pub fn pipelining(
                             debug!("You should recv:\n{}", content);
                             debug!("You actually recv:\n{}\n", output);
                         } else {
-                            info!("pipelining: paths {} pass.",paths_str);
+                            info!("Pipelining: paths {} pass.", paths_str);
                             passes += 1;
                         }
                     }
@@ -104,7 +102,10 @@ pub fn pipelining(
         }
 
         None => {
-            error!("pipelining item is '{:?}', which should be an array.", items);
+            error!(
+                "Pipelining item is '{:?}', which should be an array.",
+                items
+            );
             return Err(());
         }
     }
@@ -137,7 +138,6 @@ fn parse_pipelining_requests(
     }
 
     let cmd = format!("(echo -en \"{}\";)| nc {} {}", all_requests, ip, port);
-    
     return Ok((cmd, all_paths));
 }
 
@@ -145,11 +145,9 @@ fn parse_pipelining_response(response: &str) -> String {
     let bodys: Vec<&str> = response.split("\r\n\r\n").collect();
     let mut all_body = String::new();
     for body in bodys {
-        let body =  match body.find("HTTP/1.1") {
-            Some(postion) => {
-                &body[..postion]
-            }
-            None => body
+        let body = match body.find("HTTP/1.1") {
+            Some(postion) => &body[..postion],
+            None => body,
         };
 
         all_body = format!("{}{}", all_body, body);
