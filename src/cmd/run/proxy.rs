@@ -53,7 +53,7 @@ pub fn proxy(
                                     return Err(());
                                 }
                             };
-                            let cmd = format!("curl {}{}", base_url, path);
+                            let cmd = format!("curl --connect-timeout 5 {}{}", base_url, path);
                             let output = match process::Command::new("bash")
                                 .arg("-c")
                                 .arg(cmd.as_str())
@@ -66,7 +66,7 @@ pub fn proxy(
                                 }
                             };
                             let output = String::from_utf8_lossy(&output.stdout);
-                            let cmd = format!("curl {}{}", host, path);
+                            let cmd = format!("curl --connect-timeout 5 {}{}", host, path);
                             let content = match process::Command::new("bash")
                                 .arg("-c")
                                 .arg(cmd.as_str())

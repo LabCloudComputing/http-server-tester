@@ -2,7 +2,7 @@
  * @Author: IceyBlackTea
  * @Date: 2022-03-31 21:53:26
  * @LastEditors: IceyBlackTea
- * @LastEditTime: 2022-04-01 10:38:24
+ * @LastEditTime: 2022-04-01 11:47:49
  * @FilePath: /http-server-tester/src/cmd/run/pipe.rs
  * @Description: Copyright © 2021 IceyBlackTea. All rights reserved.
  */
@@ -56,10 +56,10 @@ pub fn pipelining(
                         let output = parse_pipelining_response(output.as_ref());
                         let mut content = String::new();
 
-                        let mut paths_str = String::new();
+                        let mut paths_str = String::from("[");
                         for path in paths {
-                            paths_str = format!("{}, {}", paths_str, path);
-                            let cmd = format!("curl {}{}", &base_url, path);
+                            paths_str = format!("{}{},", paths_str, path);
+                            let cmd = format!("curl --connect-timeout 5 {}{}", &base_url, path);
                             let output = match process::Command::new("bash")
                                 .arg("-c")
                                 .arg(cmd.as_str())
@@ -74,6 +74,7 @@ pub fn pipelining(
                             let content_part = String::from_utf8_lossy(&output.stdout);
                             content = format!("{}{}", content, content_part);
                         }
+                        paths_str = format!("{}\x08]", paths_str);
 
                         all += 1;
                         if content != output {
@@ -84,7 +85,7 @@ pub fn pipelining(
                             debug!("You should recv:\n{}", content);
                             debug!("You actually recv:\n{}\n", output);
                         } else {
-                            info!("Pipelining: paths {} pass.", paths_str);
+                            info!("Pipelining: paths - {} pass.", paths_str);
                             passes += 1;
                         }
                     }
