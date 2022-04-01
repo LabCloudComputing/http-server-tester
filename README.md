@@ -26,15 +26,15 @@ There are 2 files in `config/`: `tester-config.json` & `log-config.yaml`.
 
 `tester-config.json` defines commands and test items of the test program.
 
-`log-config.yaml` defines how to output into `stdout` & log file.
+`log-config.yaml` defines how to output into console & the log file.
 
 What you need to do first is to modify the values of this keys in `tester-config.json`: 
 
-- `directory`
-- `build`
-- `clean`
-- `bin`
-- `server`.
+- `directory` The directroy of your project,
+- `build` The command you compile your project,
+- `clean` The command you clean your project,
+- `bin` The command you run your project,
+- `server` The arguments for running your HTTP server. 
 
 For example:
 
@@ -55,7 +55,8 @@ For example:
 
 **ATTENTION**: `bin` is relative to `directory`.
 
-> It's better to use absolute path for the key `directory`. Relative path is OK, but don't use environment variables like `$HOME` or `~`.
+> It's better to use absolute path for the key `directory`. 
+> Relative path is OK, but don't use environment variables like `$HOME` or `~`.
 
 > If you want to pass `build` or `clean`, just use a empty string `""`.
 
@@ -93,7 +94,7 @@ You can also use other subcommands, like `build`, `dev`, to help you to develop 
 
 > The `build` part will not print any messages unless it builds failed.
 
-Use `http-server-test --help` for more help information.
+Use `http-server-tester --help` for more help information.
 
 ```bash
 user@linux:~/http-server-tester$ ./http-server-tester --help
@@ -191,7 +192,7 @@ It's a bit long, so please read it carefully.
 | wait_seconds | integer | The time for the tester to wait for your server to start |
 | basic / advanced | Object | Test items of basic / advanced version |
 
-> You can extend the waiting time appropriately if test statred before your server startup completely.
+> You can extend the waiting time appropriately if testing always starts before your server startups completely.
 
 ##### basic & advanced
 
