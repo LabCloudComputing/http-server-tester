@@ -26,7 +26,7 @@ There are 2 files in `config/`: `tester-config.json` & `log-config.yaml`.
 
 `tester-config.json` defines commands and test items of the test program.
 
-`log-config.yaml` defines how to output into console & the log file.
+`log-config.yaml` defines how to output to the console & the log file.
 
 What you need to do first is to modify the values of this keys in `tester-config.json`: 
 
@@ -94,11 +94,13 @@ You can also use other subcommands, like `build`, `dev`, to help you to develop 
 
 > The `build` part will not print any messages unless it builds failed.
 
+> The output of your server will be printed to the console, but not the log file.
+
 Use `http-server-tester --help` for more help information.
 
 ```bash
 user@linux:~/http-server-tester$ ./http-server-tester --help
-http-server-tester 1.0.1
+http-server-tester x.x.x
 IceyBlackTea <IceyBlackTea@outlook.com>
 A CLI test program for HNU Cloud Computing Lab 2, built with Rust.
 

@@ -2,7 +2,7 @@
  * @Author: IceyBlackTea
  * @Date: 2022-03-30 21:46:18
  * @LastEditors: IceyBlackTea
- * @LastEditTime: 2022-04-01 00:17:22
+ * @LastEditTime: 2022-04-02 22:42:54
  * @FilePath: /http-server-tester/src/cmd/run/perf.rs
  * @Description: Copyright © 2021 IceyBlackTea. All rights reserved.
  */
@@ -20,35 +20,33 @@ pub fn performance(
     items: serde_json::Value,
     wait_seconds: u64,
     version: &Version,
-) -> Result<Vec<(usize, usize, f64, f64)>, ()> {
+) -> Result<Vec<(usize, usize, f64, f64)>, String> {
     trace!("Testing performance...");
-
-    let mut server = match version {
-        Version::Debug => None,
-        Version::Release => Some(server::try_run(dir, bin, server_args, wait_seconds)),
-    };
 
     match items.as_array() {
         Some(perf) => {
+            let mut server = match version {
+                Version::Debug => None,
+                Version::Release => Some(server::try_run(dir, bin, server_args, wait_seconds)?),
+            };
+
             let results = match run_ab(base_url, perf) {
                 Ok(results) => results,
-                Err(_) => {
-                    server::try_kill(&mut server);
-                    return Err(());
+                Err(err) => {
+                    server::try_kill(&mut server)?;
+                    return Err(err);
                 }
             };
 
             trace!("Testing performance finished.");
-            server::try_kill(&mut server);
+            server::try_kill(&mut server)?;
             Ok(results)
         }
         None => {
-            error!(
+            return Err(format!(
                 "Performance item is '{:?}', which should be an array.",
                 items
-            );
-            server::try_kill(&mut server);
-            return Err(());
+            ));
         }
     }
 }
@@ -56,7 +54,7 @@ pub fn performance(
 pub fn run_ab(
     base_url: &String,
     perf: &Vec<serde_json::Value>,
-) -> Result<Vec<(usize, usize, f64, f64)>, ()> {
+) -> Result<Vec<(usize, usize, f64, f64)>, String> {
     let mut results = vec![];
 
     for item in perf {
@@ -72,8 +70,7 @@ pub fn run_ab(
         {
             Ok(output) => output,
             Err(err) => {
-                error!("Running ab error: {}.", err);
-                return Err(());
+                return Err(format!("Running ab error: {}.", err));
             }
         };
 
@@ -90,8 +87,7 @@ pub fn run_ab(
             ));
         } else {
             let output = String::from_utf8_lossy(&output.stderr).as_ref().to_string();
-            error!("ab test failed.");
-            error!("ab stderr output:\n{}", output);
+            return Err(format!("ab test failed:\n {}.", output));
         }
     }
 

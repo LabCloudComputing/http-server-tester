@@ -2,7 +2,7 @@
  * @Author: IceyBlackTea
  * @Date: 2022-03-30 23:43:23
  * @LastEditors: IceyBlackTea
- * @LastEditTime: 2022-04-01 11:53:27
+ * @LastEditTime: 2022-04-02 21:52:16
  * @FilePath: /http-server-tester/src/cmd/run/http.rs
  * @Description: Copyright © 2021 IceyBlackTea. All rights reserved.
  */
@@ -23,7 +23,7 @@ pub fn http(
     items: serde_json::Value,
     wait_seconds: u64,
     version: &Version,
-) -> Result<(usize, usize), ()> {
+) -> Result<(usize, usize), String> {
     trace!("Testing http...");
 
     let mode_items = config::get_json_value(&items, mode.as_str())?;
@@ -32,31 +32,31 @@ pub fn http(
 
     let mut server = match version {
         Version::Debug => None,
-        Version::Release => Some(server::try_run(dir, bin, server_args, wait_seconds)),
+        Version::Release => Some(server::try_run(dir, bin, server_args, wait_seconds)?),
     };
     let get_result = match get(&base_url, &get_items) {
         Ok(result) => result,
-        Err(_) => {
-            server::try_kill(&mut server);
-            return Err(());
+        Err(err) => {
+            server::try_kill(&mut server)?;
+            return Err(err);
         }
     };
 
     let post_result = match post(mode.as_str(), &base_url, &post_items) {
         Ok(result) => result,
-        Err(_) => {
-            server::try_kill(&mut server);
-            return Err(());
+        Err(err) => {
+            server::try_kill(&mut server)?;
+            return Err(err);
         }
     };
 
     trace!("Testing HTTP finished.");
-    server::try_kill(&mut server);
+    server::try_kill(&mut server)?;
 
     Ok((get_result.0 + post_result.0, get_result.1 + post_result.1))
 }
 
-pub fn get(base_url: &str, items: &serde_json::Value) -> Result<(usize, usize), ()> {
+pub fn get(base_url: &str, items: &serde_json::Value) -> Result<(usize, usize), String> {
     let (mut all, mut passes) = (0, 0);
     match items.as_array() {
         Some(gets) => {
@@ -72,18 +72,21 @@ pub fn get(base_url: &str, items: &serde_json::Value) -> Result<(usize, usize), 
                 {
                     Ok(output) => output,
                     Err(err) => {
-                        error!("Running curl error: {}.", err);
-                        return Err(());
+                        return Err(format!("Running curl error: {}.", err));
                     }
                 };
+
+                if !output.status.success() {
+                    let stderr = String::from_utf8_lossy(&output.stderr);
+                    return Err(format!("Run curl failed:\n{}", stderr));
+                }
 
                 let output = String::from_utf8_lossy(&output.stdout);
 
                 let content = match fs::read_to_string(file.clone()) {
                     Ok(content) => content,
                     Err(err) => {
-                        error!("Failed to read file {}: {}", file, err);
-                        return Err(());
+                        return Err(format!("Failed to read file {}: {}", file, err));
                     }
                 };
 
@@ -102,15 +105,21 @@ pub fn get(base_url: &str, items: &serde_json::Value) -> Result<(usize, usize), 
         }
 
         None => {
-            error!("Get item is '{:?}', which should be an array.", items);
-            return Err(());
+            return Err(format!(
+                "Get item is '{:?}', which should be an array.",
+                items
+            ));
         }
     }
 
     return Ok((all, passes));
 }
 
-pub fn post(mode: &str, base_url: &str, items: &serde_json::Value) -> Result<(usize, usize), ()> {
+pub fn post(
+    mode: &str,
+    base_url: &str,
+    items: &serde_json::Value,
+) -> Result<(usize, usize), String> {
     let (mut all, mut passes) = (0, 0);
     let posts = items.as_array();
     match posts {
@@ -123,8 +132,7 @@ pub fn post(mode: &str, base_url: &str, items: &serde_json::Value) -> Result<(us
                 let payload = match fs::read_to_string(payload.clone()) {
                     Ok(content) => content,
                     Err(err) => {
-                        error!("Failed to read payload file {}: {}", payload, err);
-                        return Err(());
+                        return Err(format!("Failed to read payload file {}: {}", payload, err));
                     }
                 };
                 let cmd = match mode {
@@ -142,18 +150,21 @@ pub fn post(mode: &str, base_url: &str, items: &serde_json::Value) -> Result<(us
                 {
                     Ok(output) => output,
                     Err(err) => {
-                        error!("Running curl error: {}.", err);
-                        return Err(());
+                        return Err(format!("Running curl error: {}.", err));
                     }
                 };
+
+                if !output.status.success() {
+                    let stderr = String::from_utf8_lossy(&output.stderr);
+                    return Err(format!("Run curl failed:\n{}", stderr));
+                }
 
                 let output = String::from_utf8_lossy(&output.stdout);
 
                 let content = match fs::read_to_string(file.clone()) {
                     Ok(content) => content,
                     Err(err) => {
-                        error!("Failed to read file {}: {}", file, err);
-                        return Err(());
+                        return Err(format!("Failed to read file {}: {}", file, err));
                     }
                 };
 
@@ -172,8 +183,10 @@ pub fn post(mode: &str, base_url: &str, items: &serde_json::Value) -> Result<(us
         }
 
         None => {
-            error!("Post item is '{:?}', which should be an array.", items);
-            return Err(());
+            return Err(format!(
+                "Post item is '{:?}', which should be an array.",
+                items
+            ));
         }
     }
 

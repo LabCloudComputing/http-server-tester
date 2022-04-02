@@ -46,8 +46,8 @@ pub enum Version {
     Release,
 }
 
-fn run_cmd() -> Result<(), ()> {
-    match log4rs::init_file("config/log-config.yaml", Default::default()) {
+fn run_cmd() -> Result<(), String> {
+    match log4rs::init_file("./config/log-config.yaml", Default::default()) {
         Ok(()) => {}
         Err(_) => {
             error!("Parse ./config/log-config.yaml failed, use default setting.")
@@ -55,8 +55,8 @@ fn run_cmd() -> Result<(), ()> {
     };
 
     let args = Cli::parse();
-    let config_file = "config/tester-config.json".to_string();
-    let config = config::read_config_file(config_file);
+    let config_file = "./config/tester-config.json".to_string();
+    let config = config::read_config_file(config_file)?;
 
     match &args.command {
         Command::Check => {
@@ -85,12 +85,7 @@ fn run_cmd() -> Result<(), ()> {
     Ok(())
 }
 
-fn test(version: Version, mode: &String, config: serde_json::Value) -> Result<(), ()> {
-    let (server_args, base_url) = config::parse_server_args(&config)?;
-    let test_items = config::get_json_value(&config, "items")?;
-
-    let wait_seconds = config::get_json_value_as_u64(&test_items, "wait_seconds")?;
-
+fn test(version: Version, mode: &String, config: serde_json::Value) -> Result<(), String> {
     let mut dir = String::new();
     let mut bin = String::new();
 
@@ -100,6 +95,11 @@ fn test(version: Version, mode: &String, config: serde_json::Value) -> Result<()
         build::build_server(&dir, &build)?;
         bin = config::get_json_value_as_string(&config, "bin")?;
     }
+
+    let (server_args, base_url) = config::parse_server_args(&config)?;
+    let test_items = config::get_json_value(&config, "items")?;
+
+    let wait_seconds = config::get_json_value_as_u64(&test_items, "wait_seconds")?;
 
     let http_result = Some(run::http(
         &dir,
@@ -164,47 +164,9 @@ fn print_results(
     perf_result: Option<Vec<(usize, usize, f64, f64)>>,
 ) {
     info!("-------TESTER RESULTS------");
-    match http_result {
-        Some((all, passes)) => {
-            let message = format!("HTTP test items: all {}, passes {}", all, passes);
-            if all == passes {
-                info!("{}", message);
-            } else {
-                warn!("{}", message);
-            }
-        }
-        None => {
-            warn!("HTTP not test...");
-        }
-    }
-
-    match pipe_result {
-        Some((all, passes)) => {
-            let message = format!("Pipelining test items: all {}, passes {}", all, passes);
-            if all == passes {
-                info!("{}", message);
-            } else {
-                warn!("{}", message);
-            }
-        }
-        None => {
-            warn!("Pipelining not test...");
-        }
-    }
-
-    match proxy_result {
-        Some((all, passes)) => {
-            let message = format!("Proxy test items: all {}, passes {}", all, passes);
-            if all == passes {
-                info!("{}", message);
-            } else {
-                warn!("{}", message);
-            }
-        }
-        None => {
-            warn!("Proxy not test...");
-        }
-    }
+    parse_result("HTTP", http_result);
+    parse_result("Pepelining", pipe_result);
+    parse_result("Proxy", proxy_result);
 
     match perf_result {
         Some(results) => {
@@ -230,8 +192,25 @@ fn print_results(
     info!("-------TESTER RESULTS------");
 }
 
+fn parse_result(item: &str, result: Option<(usize, usize)>) {
+    match result {
+        Some((all, passes)) => {
+            let message = format!("{} test items: all {}, passes {}", item, all, passes);
+            if all == passes {
+                info!("{}", message);
+            } else {
+                error!("{}", message);
+            }
+        }
+        None => {
+            warn!("{} not test...", item);
+        }
+    }
+}
+
 fn main() {
-    if let Err(_) = run_cmd() {
+    if let Err(err) = run_cmd() {
+        error!("{}", err);
         error!("Tester exited with errors.");
         process::exit(-1);
     }

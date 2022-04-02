@@ -2,7 +2,7 @@
  * @Author: IceyBlackTea
  * @Date: 2022-03-30 13:02:28
  * @LastEditors: IceyBlackTea
- * @LastEditTime: 2022-04-01 00:58:18
+ * @LastEditTime: 2022-04-02 21:17:34
  * @FilePath: /http-server-tester/src/cmd/check.rs
  * @Description: Copyright © 2021 IceyBlackTea. All rights reserved.
  */
@@ -18,7 +18,7 @@ fn check_tool_version(tool: &str) -> bool {
     {
         Ok(output) => output,
         Err(err) => {
-            error!("Checking tools error: {}.", err);
+            error!("Run the check command error: {}.", err);
             return false;
         }
     };
@@ -26,50 +26,36 @@ fn check_tool_version(tool: &str) -> bool {
     if output.status.success() {
         true
     } else {
-        warn!("{} haven't been installed or run error.", tool);
+        error!("{} haven't been installed.", tool);
         false
     }
 }
 
-pub fn check_tools() -> Result<(), ()> {
+pub fn check_tools() -> Result<(), String> {
     trace!("Checking tools...");
 
     let curl = check_tool_version("curl");
     let nc = check_tool_version("nc");
     let ab = check_tool_version("ab");
 
-    trace!("Checking tools finished.");
-
-    if !curl {
-        error!("Please installed curl.");
-    }
-
-    if !nc {
-        error!("Please installed nc.");
-    }
-
-    if !ab {
-        error!("Please installed ab.");
-    }
-
     if curl && nc && ab {
+        trace!("Checking tools finished.");
         return Ok(());
     }
 
-    Err(())
+    Err(format!(
+        "Checking tools finished. Please install all tools."
+    ))
 }
 
-pub fn check_mode(mode: &String) -> Result<(), ()> {
+pub fn check_mode(mode: &String) -> Result<(), String> {
     check_tools()?;
     match mode.as_str() {
         "basic" => Ok(()),
         "advanced" => Ok(()),
-        _ => {
-            error!(
-                "Unknown mode {}, which should be 'basic' or 'advanced'.",
-                mode
-            );
-            Err(())
-        }
+        _ => Err(format!(
+            "Unknown mode {}, which should be 'basic' or 'advanced'.",
+            mode
+        )),
     }
 }

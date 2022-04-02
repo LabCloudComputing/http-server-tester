@@ -2,7 +2,7 @@
  * @Author: IceyBlackTea
  * @Date: 2022-03-30 23:44:10
  * @LastEditors: IceyBlackTea
- * @LastEditTime: 2022-04-01 00:17:35
+ * @LastEditTime: 2022-04-02 22:02:04
  * @FilePath: /http-server-tester/src/cmd/run/proxy.rs
  * @Description: Copyright © 2021 IceyBlackTea. All rights reserved.
  */
@@ -21,11 +21,9 @@ pub fn proxy(
     items: serde_json::Value,
     wait_seconds: u64,
     version: &Version,
-) -> Result<(usize, usize), ()> {
-    let (mut all, mut passes) = (0, 0);
-
+) -> Result<(usize, usize), String> {
     trace!("Testing proxy...");
-
+    let (mut all, mut passes) = (0, 0);
     match items.as_array() {
         Some(proxys) => {
             for items in proxys {
@@ -35,7 +33,7 @@ pub fn proxy(
                 let mut server = match version {
                     Version::Debug => None,
                     Version::Release => {
-                        Some(server::try_run(dir, bin, &proxy_server_args, wait_seconds))
+                        Some(server::try_run(dir, bin, &proxy_server_args, wait_seconds)?)
                     }
                 };
 
@@ -45,12 +43,11 @@ pub fn proxy(
                             let path = match path_.as_str() {
                                 Some(path) => path,
                                 None => {
-                                    error!(
+                                    server::try_kill(&mut server)?;
+                                    return Err(format!(
                                         "The value of key 'path' is '{}' which should be a string.",
                                         path_
-                                    );
-                                    server::try_kill(&mut server);
-                                    return Err(());
+                                    ));
                                 }
                             };
                             let cmd = format!("curl --connect-timeout 5 {}{}", base_url, path);
@@ -61,10 +58,14 @@ pub fn proxy(
                             {
                                 Ok(output) => output,
                                 Err(err) => {
-                                    error!("Running curl error: {}.", err);
-                                    return Err(());
+                                    return Err(format!("Running curl error: {}.", err));
                                 }
                             };
+
+                            if !output.status.success() {
+                                let stderr = String::from_utf8_lossy(&output.stderr);
+                                return Err(format!("Run curl failed:\n{}", stderr));
+                            }
                             let output = String::from_utf8_lossy(&output.stdout);
                             let cmd = format!("curl --connect-timeout 5 {}{}", host, path);
                             let content = match process::Command::new("bash")
@@ -74,10 +75,14 @@ pub fn proxy(
                             {
                                 Ok(output) => output,
                                 Err(err) => {
-                                    error!("Running curl error: {}.", err);
-                                    return Err(());
+                                    return Err(format!("Running curl error: {}.", err));
                                 }
                             };
+
+                            if !content.status.success() {
+                                let stderr = String::from_utf8_lossy(&content.stderr);
+                                return Err(format!("Run curl failed:\n{}", stderr));
+                            }
                             let content = String::from_utf8_lossy(&content.stdout);
 
                             all += 1;
@@ -93,21 +98,25 @@ pub fn proxy(
                         }
                     }
                     None => {
-                        error!("Paths item is '{:?}', which should be an array.", items);
-                        server::try_kill(&mut server);
-                        return Err(());
+                        server::try_kill(&mut server)?;
+                        return Err(format!(
+                            "Paths item is '{:?}', which should be an array.",
+                            items
+                        ));
                     }
                 }
                 trace!("Testing proxy finished.");
-                server::try_kill(&mut server);
+                server::try_kill(&mut server)?;
             }
 
             Ok((all, passes))
         }
 
         None => {
-            error!("Proxy item is '{:?}', which should be an array.", items);
-            return Err(());
+            return Err(format!(
+                "Proxy item is '{:?}', which should be an array.",
+                items
+            ));
         }
     }
 }

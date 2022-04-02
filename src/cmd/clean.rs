@@ -2,14 +2,14 @@
  * @Author: IceyBlackTea
  * @Date: 2022-03-30 13:05:17
  * @LastEditors: IceyBlackTea
- * @LastEditTime: 2022-03-31 20:54:32
+ * @LastEditTime: 2022-04-02 22:36:13
  * @FilePath: /http-server-tester/src/cmd/clean.rs
  * @Description: Copyright © 2021 IceyBlackTea. All rights reserved.
  */
 
 use std::process;
 
-pub fn clean(dir: &String, cmd: &String) -> Result<(), ()> {
+pub fn clean(dir: &String, cmd: &String) -> Result<(), String> {
     trace!("Cleaning the project directory...");
     let output = match process::Command::new("bash")
         .current_dir(dir.as_str())
@@ -19,8 +19,7 @@ pub fn clean(dir: &String, cmd: &String) -> Result<(), ()> {
     {
         Ok(output) => output,
         Err(err) => {
-            error!("Cleaning the project directory error: {}.", err);
-            return Err(());
+            return Err(format!("Run the clean command error: {}.", err));
         }
     };
 
@@ -28,9 +27,7 @@ pub fn clean(dir: &String, cmd: &String) -> Result<(), ()> {
         trace!("Cleaning the project directory finished.");
         Ok(())
     } else {
-        let stderr_str = String::from_utf8_lossy(&output.stderr);
-        error!("Cleaning the project directory error.");
-        trace!("Cleaning sdterr output:\n{}", stderr_str);
-        Err(())
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        Err(format!("Cleaning the project directory error:\n{}", stderr))
     }
 }
