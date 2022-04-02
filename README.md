@@ -136,9 +136,9 @@ user@linux:~/http-server-tester$ ./http-server-tester run --mode advancd
 [WARN ] Trying to kill the HTTP Server...
 [TRACE] The HTTP Server is stopped.
 [INFO ] -------TESTER RESULTS------
-[WARN ] HTTP test items: all 6, passes 3
+[ERROR] HTTP test items: all 6, passes 3
 [INFO ] Pipelining test items: all 2, passes 2
-[WARN ] Proxy test items: all 2, passes 0
+[ERROR] Proxy test items: all 2, passes 0
 [INFO ] Perfermance test 1 times.
 [INFO ] No.1: requests 100, concurrency 10, reqs/s 9273, time/req 0.108
 [INFO ] -------TESTER RESULTS------
