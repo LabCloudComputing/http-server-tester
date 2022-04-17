@@ -48,7 +48,7 @@
                     "file": "./files/json/data.json"
                 },
                 {
-                    "path": "/api/search?name=Foo",
+                    "path": "/api/search?id=1&name=Foo",
                     "file": "./files/json/search.json"
                 },
                 {
@@ -86,7 +86,7 @@
             ],
             "performance": [
                 {
-                    "path": "/api/search?name=Foo",
+                    "path": "/api/search?id=1&name=Foo",
                     "requests": 100,
                     "concurrency": 10
                 }
