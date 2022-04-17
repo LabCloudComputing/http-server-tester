@@ -2,7 +2,7 @@
  * @Author: IceyBlackTea
  * @Date: 2022-03-30 23:43:23
  * @LastEditors: IceyBlackTea
- * @LastEditTime: 2022-04-02 21:52:16
+ * @LastEditTime: 2022-04-17 19:48:03
  * @FilePath: /http-server-tester/src/cmd/run/http.rs
  * @Description: Copyright © 2021 IceyBlackTea. All rights reserved.
  */
@@ -64,7 +64,7 @@ pub fn get(base_url: &str, items: &serde_json::Value) -> Result<(usize, usize), 
                 let path = config::get_json_value_as_string(item, "path")?;
                 let file = config::get_json_value_as_string(item, "file")?;
 
-                let cmd = format!("curl --connect-timeout 5 {}{}", base_url, path);
+                let cmd = format!("curl --connect-timeout 5 \"{}{}\"", base_url, path);
                 let output = match process::Command::new("bash")
                     .arg("-c")
                     .arg(cmd.as_str())
@@ -136,9 +136,9 @@ pub fn post(
                     }
                 };
                 let cmd = match mode {
-                    "basic" => format!("curl -d \"{}\" -X POST {}{}", payload, base_url, path),
+                    "basic" => format!("curl --connect-timeout 5 -d \"{}\" -X POST \"{}{}\"", payload, base_url, path),
                     "advanced" => format!(
-                        "curl -H 'Content-Type: application/json' -d '{}' -X POST {}{}",
+                        "curl --connect-timeout 5 -H 'Content-Type: application/json' -d '{}' -X POST \"{}{}\"",
                         payload, base_url, path
                     ),
                     _ => String::new(),
