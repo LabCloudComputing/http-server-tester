@@ -2,7 +2,7 @@
  * @Author: IceyBlackTea
  * @Date: 2022-03-30 23:44:10
  * @LastEditors: IceyBlackTea
- * @LastEditTime: 2022-04-02 22:02:04
+ * @LastEditTime: 2022-04-17 19:49:14
  * @FilePath: /http-server-tester/src/cmd/run/proxy.rs
  * @Description: Copyright © 2021 IceyBlackTea. All rights reserved.
  */
@@ -50,7 +50,7 @@ pub fn proxy(
                                     ));
                                 }
                             };
-                            let cmd = format!("curl --connect-timeout 5 {}{}", base_url, path);
+                            let cmd = format!("curl --connect-timeout 5 \"{}{}\"", base_url, path);
                             let output = match process::Command::new("bash")
                                 .arg("-c")
                                 .arg(cmd.as_str())
@@ -67,7 +67,7 @@ pub fn proxy(
                                 return Err(format!("Run curl failed:\n{}", stderr));
                             }
                             let output = String::from_utf8_lossy(&output.stdout);
-                            let cmd = format!("curl --connect-timeout 5 {}{}", host, path);
+                            let cmd = format!("curl --connect-timeout 5 \"{}{}\"", host, path);
                             let content = match process::Command::new("bash")
                                 .arg("-c")
                                 .arg(cmd.as_str())

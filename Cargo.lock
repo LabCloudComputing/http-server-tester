@@ -135,7 +135,7 @@ dependencies = [
 
 [[package]]
 name = "http-server-tester"
-version = "1.0.4"
+version = "1.0.5"
 dependencies = [
  "clap",
  "log",
