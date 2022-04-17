@@ -2,7 +2,7 @@
  * @Author: IceyBlackTea
  * @Date: 2022-03-30 13:11:24
  * @LastEditors: IceyBlackTea
- * @LastEditTime: 2022-04-02 22:40:06
+ * @LastEditTime: 2022-04-17 16:40:40
  * @FilePath: /http-server-tester/src/utils/config.rs
  * @Description: Copyright © 2021 IceyBlackTea. All rights reserved.
  */
@@ -80,7 +80,7 @@ pub fn parse_server_args(config: &serde_json::Value) -> Result<(String, String),
     let thread = get_json_value_as_u64(&server, "threads")?;
 
     Ok((
-        format!("--ip {} --port {} --thread {}", ip, port, thread),
+        format!("--ip {} --port {} --threads {}", ip, port, thread),
         format!("http://{}:{}", ip, port),
     ))
 }
