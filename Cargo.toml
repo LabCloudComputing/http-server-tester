@@ -1,7 +1,7 @@
 [package]
 name = "http-server-tester"
 authors = ["IceyBlackTea <IceyBlackTea@outlook.com>"]
-version = "1.0.5"
+version = "1.0.6-alpha"
 description = "A CLI test program for HNU Cloud Computing Lab 2."
 readme = "README.md"
 license = "GPL-3.0-or-later"

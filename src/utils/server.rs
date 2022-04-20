@@ -2,7 +2,7 @@
  * @Author: IceyBlackTea
  * @Date: 2022-03-30 13:09:36
  * @LastEditors: IceyBlackTea
- * @LastEditTime: 2022-04-02 21:40:30
+ * @LastEditTime: 2022-04-20 10:30:29
  * @FilePath: /http-server-tester/src/utils/server.rs
  * @Description: Copyright © 2021 IceyBlackTea. All rights reserved.
  */
@@ -32,7 +32,7 @@ pub fn try_run(
     wait_seconds: u64,
 ) -> Result<process::Child, String> {
     let mut server = run(dir, bin, server_args)?;
-    trace!("Waiting in {} seconds for server to start...", wait_seconds);
+    trace!("Waiting in {}s for server to start...", wait_seconds);
     thread::sleep(Duration::from_secs(wait_seconds));
     match server.try_wait() {
         Ok(Some(_)) => Err(format!("The server isn't running.")),
@@ -47,6 +47,8 @@ pub fn try_kill(server: &mut Option<process::Child>) -> Result<(), String> {
             warn!("Trying to kill the HTTP Server...");
             match server.kill() {
                 Ok(()) => {
+                    trace!("Waiting in 1s for server to stop...");
+                    thread::sleep(Duration::from_secs(1));
                     trace!("The HTTP Server is stopped.");
                     Ok(())
                 }
