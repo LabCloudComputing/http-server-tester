@@ -6,7 +6,7 @@ This is a CLI test program for [HNU Cloud Computing Lab 2](https://github.com/19
 
 For most student, you don't neet to rebuild this project.
 
-We provide the release versions for main platforms. 
+We provide the release versions for main platforms.
 
 **Check your OS & goto [Release Page](https://github.com/LabCloudComputing/http-server-tester/releases) to download the correct zip.**
 
@@ -237,8 +237,6 @@ I use `log4rs` to print log messages & generate log files.
 
 For more infomation, you can check [docs of log4rs](https://docs.rs/log4rs/latest/log4rs/).
 
-### Why use Rust?
+### Any Problems?
 
-Just like it. 😎 Rust YYDS.
-
-If you have any problems about this program, please write a issue.
+If you have any problems about this program, please write an issue.
